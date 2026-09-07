@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">译浪 - 轉</title>
+  <rect width="64" height="64" rx="13" fill="#d9342b"/>
+  <text
+    x="32"
+    y="34"
+    fill="#ffffff"
+    font-family="KaiTi, STKaiti, 'Kaiti TC', BiauKai, DFKai-SB, serif"
+    font-size="43"
+    font-weight="700"
+    text-anchor="middle"
+    dominant-baseline="central"
+  >轉</text>
+</svg>
