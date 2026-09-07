@@ -1,0 +1,55 @@
+# Secrets and machine-local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+credentials*.json
+secrets*.json
+config.local.*
+*.local.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.python-version
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# JavaScript and browser-test artifacts
+node_modules/
+playwright-report/
+test-results/
+blob-report/
+
+# Runtime files and generated exports
+*.log
+*.pid
+output/
+exports/
+generated/
+artifacts/
+tmp/
+temp/
+desktop*.png
+mobile*.png
+
+# Editors and operating systems
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+Desktop.ini
+

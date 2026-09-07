@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="海外热帖本土化内容工作台">
+  <title>译浪 · 内容工作台</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js" defer></script>
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="译浪首页">
+      <span class="brand-mark">译</span>
+      <span><strong>译浪</strong><small>内容工作台</small></span>
+    </a>
+    <div class="topbar-actions">
+      <span class="status-dot"><i></i>本地运行</span>
+      <button class="icon-button" id="refreshButton" type="button" title="刷新热帖" aria-label="刷新热帖"><i data-lucide="refresh-cw"></i></button>
+      <button class="button secondary" id="settingsButton" type="button"><i data-lucide="settings-2"></i><span>模型设置</span></button>
+    </div>
+  </header>
+
+  <main class="app-shell">
+    <aside class="source-sidebar" aria-label="内容来源">
+      <div class="sidebar-heading">
+        <span>发现</span>
+        <button class="icon-button small" id="collapseButton" type="button" title="收起侧栏" aria-label="收起侧栏"><i data-lucide="panel-left-close"></i></button>
+      </div>
+      <nav class="source-tabs" aria-label="来源方式">
+        <button class="source-tab active" type="button" data-source-tab="reddit"><i data-lucide="flame"></i><span>Reddit 热门</span></button>
+        <button class="source-tab" type="button" data-source-tab="link"><i data-lucide="link-2"></i><span>链接导入</span></button>
+        <button class="source-tab" type="button" data-source-tab="manual"><i data-lucide="file-pen-line"></i><span>手动录入</span></button>
+      </nav>
+      <div class="sidebar-label">内容门类</div>
+      <nav id="categoryList" class="category-list" aria-label="Reddit 内容门类">
+        <div class="skeleton category-skeleton"></div>
+        <div class="skeleton category-skeleton"></div>
+        <div class="skeleton category-skeleton"></div>
+      </nav>
+      <div class="source-note">
+        <i data-lucide="shield-check"></i>
+        <p>默认过滤成人内容。来源和生成结果请在发布前复核。</p>
+      </div>
+    </aside>
+
+    <section class="discovery-panel">
+      <div id="redditView" class="source-view active">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">内容雷达</p>
+            <h1 id="feedTitle">全站热门</h1>
+          </div>
+          <div class="feed-controls">
+            <label class="select-control">
+              <span class="sr-only">排序</span>
+              <select id="sortSelect">
+                <option value="hot">热度排序</option>
+                <option value="top">高赞排序</option>
+                <option value="new">最新发布</option>
+                <option value="rising">正在上升</option>
+              </select>
+              <i data-lucide="chevron-down"></i>
+            </label>
+            <label class="select-control" id="periodControl">
+              <span class="sr-only">时间范围</span>
+              <select id="periodSelect">
+                <option value="day">24 小时</option>
+                <option value="week">本周</option>
+                <option value="month">本月</option>
+                <option value="year">今年</option>
+                <option value="all">全部时间</option>
+              </select>
+              <i data-lucide="chevron-down"></i>
+            </label>
+          </div>
+        </div>
+        <div class="feed-meta"><span id="feedCount">正在连接 Reddit...</span><span id="feedUpdated"></span></div>
+        <div id="postList" class="post-list" aria-live="polite"></div>
+      </div>
+
+      <div id="linkView" class="source-view import-view">
+        <div class="import-inner">
+          <span class="section-icon"><i data-lucide="link-2"></i></span>
+          <p class="eyebrow">链接导入</p>
+          <h1>粘贴海外论坛帖子链接</h1>
+          <p class="muted">Reddit 链接可自动读取正文与热门评论；其他论坛将保留来源链接并进入手动编辑。</p>
+          <form id="linkForm" class="import-form">
+            <label for="sourceUrl">帖子链接</label>
+            <div class="input-with-button">
+              <input id="sourceUrl" name="sourceUrl" type="url" placeholder="https://www.reddit.com/r/..." required>
+              <button class="button primary" type="submit"><i data-lucide="download"></i><span>导入</span></button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div id="manualView" class="source-view import-view">
+        <div class="import-inner">
+          <span class="section-icon"><i data-lucide="file-pen-line"></i></span>
+          <p class="eyebrow">手动录入</p>
+          <h1>从任意海外来源开始</h1>
+          <p class="muted">适用于 Quora、Hacker News 等未开放稳定内容接口的平台。</p>
+          <button class="button primary" id="startManualButton" type="button"><i data-lucide="arrow-right"></i><span>打开编辑区</span></button>
+        </div>
+      </div>
+    </section>
+
+    <aside class="workspace-panel" id="workspacePanel">
+      <div class="workspace-top">
+        <div>
+          <p class="eyebrow">创作台</p>
+          <h2>本土化改编</h2>
+        </div>
+        <div class="workspace-actions">
+          <button class="icon-button" id="clearButton" type="button" title="清空内容" aria-label="清空内容"><i data-lucide="eraser"></i></button>
+          <button class="icon-button" id="downloadButton" type="button" title="导出 JSON" aria-label="导出 JSON" disabled><i data-lucide="download"></i></button>
+        </div>
+      </div>
+
+      <div class="workspace-tabs" role="tablist">
+        <button class="workspace-tab active" type="button" data-workspace-tab="source" role="tab">来源内容</button>
+        <button class="workspace-tab" type="button" data-workspace-tab="result" role="tab">生成结果<span id="resultBadge" hidden>1</span></button>
+      </div>
+
+      <div class="workspace-view active" id="sourceEditor" role="tabpanel">
+        <div id="selectedStatus" class="selected-status empty">
+          <i data-lucide="mouse-pointer-click"></i>
+          <span>选择一篇热帖，或直接录入内容</span>
+        </div>
+        <div class="form-grid">
+          <label>来源平台
+            <select id="platformInput">
+              <option value="Reddit">Reddit</option>
+              <option value="Quora">Quora</option>
+              <option value="Hacker News">Hacker News</option>
+              <option value="其他海外论坛">其他海外论坛</option>
+            </select>
+          </label>
+          <label>来源链接
+            <input id="urlInput" type="url" placeholder="https://...">
+          </label>
+          <label>原帖标题
+            <textarea id="titleInput" rows="2" placeholder="输入或选择原帖标题"></textarea>
+          </label>
+          <label>原帖正文
+            <textarea id="bodyInput" rows="7" placeholder="粘贴原帖正文"></textarea>
+          </label>
+          <label>热门评论 <span id="commentCount" class="field-hint">0 条</span>
+            <textarea id="commentsInput" rows="5" placeholder="每条评论之间空一行"></textarea>
+          </label>
+        </div>
+
+        <div class="generation-options">
+          <span class="option-label">发布平台</span>
+          <div class="segmented" id="platformTargets">
+            <button type="button" data-target="xiaohongshu"><span class="platform-dot xhs"></span>小红书</button>
+            <button type="button" data-target="toutiao"><span class="platform-dot tt"></span>今日头条</button>
+            <button class="active" type="button" data-target="both"><i data-lucide="layers-2"></i>双平台</button>
+          </div>
+        </div>
+
+        <button class="generate-button" id="generateButton" type="button">
+          <i data-lucide="sparkles"></i>
+          <span>生成本土化内容</span>
+        </button>
+      </div>
+
+      <div class="workspace-view result-view" id="resultView" role="tabpanel">
+        <div id="resultEmpty" class="result-empty">
+          <i data-lucide="wand-sparkles"></i>
+          <p>生成结果将在这里显示</p>
+        </div>
+        <div id="resultContent" hidden>
+          <div class="result-summary">
+            <span>核心提炼</span>
+            <p id="summaryText"></p>
+          </div>
+          <details class="compliance-box">
+            <summary><i data-lucide="shield-check"></i>合规调整说明<i class="chevron" data-lucide="chevron-down"></i></summary>
+            <p id="complianceText"></p>
+          </details>
+          <div class="result-section" id="xhsResult">
+            <div class="result-section-head"><span><i data-lucide="book-heart"></i>小红书</span><button class="copy-button" type="button" data-copy="xhs"><i data-lucide="copy"></i>复制</button></div>
+            <h3 id="xhsTitle"></h3>
+            <div id="xhsContent" class="article-content"></div>
+          </div>
+          <div class="result-section" id="toutiaoResult">
+            <div class="result-section-head"><span><i data-lucide="newspaper"></i>今日头条</span><button class="copy-button" type="button" data-copy="toutiao"><i data-lucide="copy"></i>复制</button></div>
+            <h3 id="toutiaoTitle"></h3>
+            <div id="toutiaoContent" class="article-content"></div>
+          </div>
+          <div class="result-section">
+            <div class="result-section-head"><span><i data-lucide="images"></i>配图提示词</span></div>
+            <div id="promptList" class="prompt-list"></div>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <dialog id="settingsDialog" class="settings-dialog">
+    <form method="dialog" class="dialog-shell" id="settingsForm">
+      <div class="dialog-header">
+        <div><p class="eyebrow">LLM CONNECTION</p><h2>模型设置</h2></div>
+        <button class="icon-button" id="closeSettingsButton" type="button" title="关闭" aria-label="关闭"><i data-lucide="x"></i></button>
+      </div>
+      <div class="dialog-body">
+        <label>API 地址
+          <input id="baseUrlInput" type="url" value="https://api.openai.com/v1" required>
+          <small>兼容 OpenAI Chat Completions 的接口地址</small>
+        </label>
+        <label>模型名称
+          <input id="modelInput" type="text" value="gpt-4.1-mini" required>
+        </label>
+        <label>API Token
+          <div class="password-field">
+            <input id="apiKeyInput" type="password" placeholder="仅在本次页面会话中使用" autocomplete="off">
+            <button id="toggleTokenButton" type="button" title="显示或隐藏 Token" aria-label="显示或隐藏 Token"><i data-lucide="eye"></i></button>
+          </div>
+          <small>不会写入配置文件或浏览器存储</small>
+        </label>
+        <div class="two-column-fields">
+          <label>RPM 限额
+            <input id="rpmInput" type="number" min="1" max="120" value="10">
+          </label>
+          <label>创作温度
+            <div class="range-row"><input id="temperatureInput" type="range" min="0" max="1.5" step="0.1" value="0.7"><output id="temperatureOutput">0.7</output></div>
+          </label>
+        </div>
+      </div>
+      <div class="dialog-footer">
+        <button class="button ghost" id="cancelSettingsButton" type="button">取消</button>
+        <button class="button primary" id="saveSettingsButton" type="submit">保存设置</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"><i data-lucide="circle-check"></i><span></span></div>
+</body>
+</html>
